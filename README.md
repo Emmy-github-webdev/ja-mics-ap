@@ -71,3 +71,10 @@ docker run -e DB_HOST=your-rds-endpoint -e DB_PORT=5432 -e DB_NAME=userdb \
   -e REDIS_HOST=redis-host -e REDIS_PORT=6379 \
   -p 8081:8081 user-service:latest
 ```
+
+Recreate the DB
+
+& "C:\Program Files\PostgreSQL\16\bin\psql.exe" `
+   -U postgres `
+   -d paymentdb `
+   -f paymentdb.sql
