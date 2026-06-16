@@ -2,75 +2,100 @@ name: ecommerce-microservices-ci
 
 on:
   push:
-    branches: [ "main" ]
-    paths:
-      - "**/src/**"
-      - "**/pom.xml"
-      - "**/Dockerfile"
+    branches:
+      - main
 
 jobs:
+
   build:
+
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        service: [user-service, order-service, payment-service, product-service]
+        service:
+          - user-service
+          - order-service
+          - payment-service
+          - product-service
+
+    permissions:
+      contents: write
+      pull-requests: write
 
     steps:
+
       - uses: actions/checkout@v4
 
-      - name: Check if service changed
-        id: changes
-        run: |
-          git fetch origin main
-          if git diff --name-only origin/main HEAD | grep "${{ matrix.service }}/"; then
-            echo "changed=true" >> $GITHUB_OUTPUT
-          else
-            echo "changed=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Skip if not changed
-        if: steps.changes.outputs.changed == 'false'
-        run: echo "No changes for ${{ matrix.service }}"
-
-      - name: Set up Java
-        if: steps.changes.outputs.changed == 'true'
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
 
+      - name: Unit Tests
+        run: |
+          mvn test \
+            -pl ${{ matrix.service }} \
+            -am
+
+      - name: Integration Tests
+        run: |
+          mvn verify \
+            -pl ${{ matrix.service }} \
+            -am
+
       - name: Build JAR
-        if: steps.changes.outputs.changed == 'true'
         run: |
-          mvn clean package -pl ${{ matrix.service }} -am -DskipTests
+          mvn clean package \
+            -pl ${{ matrix.service }} \
+            -am
 
-      - name: Configure AWS ECR login
-        if: steps.changes.outputs.changed == 'true'
-        run: |
-          aws ecr get-login-password | docker login --username AWS --password-stdin $ECR
+      - name: Configure AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE }}
+          aws-region: eu-central-1
 
-      - name: Build Docker image
-        if: steps.changes.outputs.changed == 'true'
+      - name: Login ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Image
         run: |
           docker build \
+            -f ${{ matrix.service }}/Dockerfile \
             -t $ECR/${{ matrix.service }}:${{ github.sha }} \
-            ./${{ matrix.service }}
+            .
 
-      - name: Push image
-        if: steps.changes.outputs.changed == 'true'
+      - name: Push Image
         run: |
-          docker push $ECR/${{ matrix.service }}:${{ github.sha }}
+          docker push \
+            $ECR/${{ matrix.service }}:${{ github.sha }}
 
-      - name: Update GitOps repo
-        if: steps.changes.outputs.changed == 'true'
+      - name: Trivy Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.ECR }}/${{ matrix.service }}:${{ github.sha }}
+          severity: CRITICAL,HIGH
+          exit-code: 1
+
+      - name: Update GitOps Repo
+        env:
+          GH_TOKEN: ${{ secrets.GITOPS_TOKEN }}
         run: |
-          git clone https://github.com/org/gitops-repo
-          cd gitops-repo/dev/${{ matrix.service }}
+          git clone https://github.com/company/gitops-repo.git
 
-          yq e '.image.tag = "${{ github.sha }}"' -i values.yaml
+          cd gitops-repo
 
-          git config user.email "ci@company.com"
-          git config user.name "ci"
-          git commit -am "update ${{ matrix.service }}"
-          git push
+          git checkout -b update-${{ matrix.service }}-${{ github.sha }}
+
+          cd apps/${{ matrix.service }}/overlays/dev
+
+          sed -i "s/newTag:.*/newTag: ${{ github.sha }}/" kustomization.yaml
+
+          git config user.name github-actions
+          git config user.email github-actions@company.com
+
+          git add .
+          git commit -m "Update ${{ matrix.service }} image"
+
+          git push origin HEAD
