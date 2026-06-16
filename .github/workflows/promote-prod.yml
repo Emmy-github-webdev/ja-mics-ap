@@ -1,0 +1,92 @@
+name: promote-production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  promote:
+
+    runs-on: ubuntu-latest
+
+    environment:
+      name: production
+
+    strategy:
+      matrix:
+        service:
+          - user-service
+          - order-service
+          - payment-service
+          - product-service
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+
+      - name: Checkout GitOps Repository
+        uses: actions/checkout@v4
+        with:
+          repository: company/gitops-repo
+          token: ${{ secrets.GITOPS_TOKEN }}
+          path: gitops
+
+      - name: Read Staging Image Tag
+        id: image
+        run: |
+
+          TAG=$(grep newTag \
+            gitops/apps/${{ matrix.service }}/overlays/staging/kustomization.yaml \
+            | awk '{print $2}')
+
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Create Promotion Branch
+        run: |
+
+          cd gitops
+
+          git checkout -b \
+            prod-${{ matrix.service }}-${{ github.sha }}
+
+      - name: Update Production Overlay
+        run: |
+
+          sed -i \
+            "s/newTag:.*/newTag: ${{ steps.image.outputs.tag }}/" \
+            gitops/apps/${{ matrix.service }}/overlays/prod/kustomization.yaml
+
+      - name: Commit Changes
+        run: |
+
+          cd gitops
+
+          git config user.name github-actions
+          git config user.email github-actions@company.com
+
+          git add .
+
+          git commit \
+            -m "Promote ${{ matrix.service }} to production"
+
+      - name: Push Branch
+        run: |
+
+          cd gitops
+
+          git push origin HEAD
+
+      - name: Create GitOps PR
+        env:
+          GH_TOKEN: ${{ secrets.GITOPS_TOKEN }}
+        run: |
+
+          cd gitops
+
+          gh pr create \
+            --title "Production Release - ${{ matrix.service }}" \
+            --body "Promoting validated image from staging to production"

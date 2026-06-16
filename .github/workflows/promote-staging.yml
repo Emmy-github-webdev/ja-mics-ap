@@ -1,0 +1,127 @@
+name: promote-staging
+
+on:
+  push:
+    branches:
+      - staging
+
+jobs:
+
+  promote:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service:
+          - user-service
+          - order-service
+          - payment-service
+          - product-service
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+
+      - name: Checkout GitOps Repository
+        uses: actions/checkout@v4
+        with:
+          repository: company/gitops-repo
+          token: ${{ secrets.GITOPS_TOKEN }}
+          path: gitops
+
+      - name: Read Current Dev Image Tag
+        id: image
+        run: |
+          TAG=$(grep newTag \
+            gitops/apps/${{ matrix.service }}/overlays/dev/kustomization.yaml \
+            | awk '{print $2}')
+
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Create Promotion Branch
+        run: |
+          cd gitops
+
+          git checkout -b \
+            staging-${{ matrix.service }}-${{ github.sha }}
+
+      - name: Update Staging Overlay
+        run: |
+          sed -i \
+            "s/newTag:.*/newTag: ${{ steps.image.outputs.tag }}/" \
+            gitops/apps/${{ matrix.service }}/overlays/staging/kustomization.yaml
+
+      - name: Commit Changes
+        run: |
+          cd gitops
+
+          git config user.name github-actions
+          git config user.email github-actions@company.com
+
+          git add .
+
+          git commit \
+            -m "Promote ${{ matrix.service }} to staging"
+
+      - name: Push Branch
+        run: |
+          cd gitops
+          git push origin HEAD
+
+      - name: Create GitOps PR
+        env:
+          GH_TOKEN: ${{ secrets.GITOPS_TOKEN }}
+        run: |
+          cd gitops
+
+          gh pr create \
+            --title "Promote ${{ matrix.service }} to staging" \
+            --body "Promoting validated image from dev to staging"
+
+
+    staging-validation:
+
+
+    needs: promote
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - name: Wait for ArgoCD Deployment
+        run: |
+          echo "Waiting for staging deployment..."
+          sleep 180
+
+      - name: Smoke Tests
+        run: |
+          ./tests/smoke/run.sh
+
+      - name: API Tests
+        run: |
+          mvn test -Pstaging-api
+
+      - name: Contract Tests
+        run: |
+          mvn verify -Pcontract
+
+      - name: End-to-End Tests
+        run: |
+          npx playwright test
+
+      - name: Performance Tests
+        run: |
+          k6 run performance/checkout.js
+
+      - name: OWASP ZAP Baseline Scan
+        run: |
+          docker run --rm \
+            ghcr.io/zaproxy/zaproxy:stable \
+            zap-baseline.py \
+            -t https://staging.company.com
+

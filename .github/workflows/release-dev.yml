@@ -1,13 +1,13 @@
-name: ecommerce-microservices-ci
+name: release-dev
 
 on:
   push:
     branches:
-      - main
+      - develop
 
 jobs:
 
-  build:
+  build-and-publish:
 
     runs-on: ubuntu-latest
 
@@ -23,8 +23,7 @@ jobs:
       contents: write
       pull-requests: write
 
-    steps:
-
+        steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-java@v4
@@ -32,25 +31,13 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Unit Tests
-        run: |
-          mvn test \
-            -pl ${{ matrix.service }} \
-            -am
-
-      - name: Integration Tests
-        run: |
-          mvn verify \
-            -pl ${{ matrix.service }} \
-            -am
-
-      - name: Build JAR
+      - name: Build
         run: |
           mvn clean package \
             -pl ${{ matrix.service }} \
             -am
 
-      - name: Configure AWS
+            - name: Configure AWS
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE }}
@@ -66,36 +53,55 @@ jobs:
             -t $ECR/${{ matrix.service }}:${{ github.sha }} \
             .
 
-      - name: Push Image
-        run: |
-          docker push \
-            $ECR/${{ matrix.service }}:${{ github.sha }}
-
-      - name: Trivy Scan
+      - name: Trivy Image Scan
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ env.ECR }}/${{ matrix.service }}:${{ github.sha }}
           severity: CRITICAL,HIGH
           exit-code: 1
 
+      - name: Push Image
+        run: |
+          docker push \
+            $ECR/${{ matrix.service }}:${{ github.sha }}
+            - name: Capture Digest
+        id: digest
+        run: |
+          DIGEST=$(docker inspect \
+            --format='{{index .RepoDigests 0}}' \
+            $ECR/${{ matrix.service }}:${{ github.sha }})
+
+          echo "digest=$DIGEST" >> $GITHUB_OUTPUT
+
       - name: Update GitOps Repo
         env:
           GH_TOKEN: ${{ secrets.GITOPS_TOKEN }}
         run: |
-          git clone https://github.com/company/gitops-repo.git
 
-          cd gitops-repo
+          git clone https://github.com/Emmy-github-webdev/Kubernetes-argocd.git
 
-          git checkout -b update-${{ matrix.service }}-${{ github.sha }}
+          cd Kubernetes-argocd
+
+          BRANCH=update-${{ matrix.service }}-${{ github.sha }}
+
+          git checkout -b $BRANCH
 
           cd apps/${{ matrix.service }}/overlays/dev
 
-          sed -i "s/newTag:.*/newTag: ${{ github.sha }}/" kustomization.yaml
+          sed -i \
+            "s/newTag:.*/newTag: ${{ github.sha }}/" \
+            kustomization.yaml
 
           git config user.name github-actions
           git config user.email github-actions@company.com
 
           git add .
-          git commit -m "Update ${{ matrix.service }} image"
 
-          git push origin HEAD
+          git commit \
+            -m "Promote ${{ matrix.service }} to ${{ github.sha }}"
+
+          git push origin $BRANCH
+
+          gh pr create \
+            --title "Deploy ${{ matrix.service }}" \
+            --body "Automated deployment PR"
