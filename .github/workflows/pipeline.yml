@@ -1,0 +1,76 @@
+name: ecommerce-microservices-ci
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "**/src/**"
+      - "**/pom.xml"
+      - "**/Dockerfile"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service: [user-service, order-service, payment-service, product-service]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check if service changed
+        id: changes
+        run: |
+          git fetch origin main
+          if git diff --name-only origin/main HEAD | grep "${{ matrix.service }}/"; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Skip if not changed
+        if: steps.changes.outputs.changed == 'false'
+        run: echo "No changes for ${{ matrix.service }}"
+
+      - name: Set up Java
+        if: steps.changes.outputs.changed == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Build JAR
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          mvn clean package -pl ${{ matrix.service }} -am -DskipTests
+
+      - name: Configure AWS ECR login
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          aws ecr get-login-password | docker login --username AWS --password-stdin $ECR
+
+      - name: Build Docker image
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          docker build \
+            -t $ECR/${{ matrix.service }}:${{ github.sha }} \
+            ./${{ matrix.service }}
+
+      - name: Push image
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          docker push $ECR/${{ matrix.service }}:${{ github.sha }}
+
+      - name: Update GitOps repo
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git clone https://github.com/org/gitops-repo
+          cd gitops-repo/dev/${{ matrix.service }}
+
+          yq e '.image.tag = "${{ github.sha }}"' -i values.yaml
+
+          git config user.email "ci@company.com"
+          git config user.name "ci"
+          git commit -am "update ${{ matrix.service }}"
+          git push
