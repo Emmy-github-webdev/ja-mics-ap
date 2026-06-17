@@ -20,6 +20,11 @@ jobs:
           - payment-service
           - product-service
 
+    permissions:
+      contents: write
+      pull-requests: write
+      security-events: write
+
     steps:
       - uses: actions/checkout@v4
 
@@ -63,6 +68,10 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: java
+
+      - name: Build project (REQUIRED)
+        run: mvn clean compile
+        working-directory: ${{ matrix.service }}
 
       - name: CodeQL Analyze
         uses: github/codeql-action/analyze@v3
