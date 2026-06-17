@@ -45,6 +45,7 @@ jobs:
         working-directory: ${{ matrix.service }}
         run: |
           mvn sonar:sonar \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
             -Dsonar.token=${{ secrets.SONAR_TOKEN }}
 
       - name: Dependency Check
