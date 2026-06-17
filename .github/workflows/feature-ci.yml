@@ -30,23 +30,23 @@ jobs:
 
       - name: Compile
         run: |
-          mvn clean compile \
           working-directory: ${{ matrix.service }}
+          mvn clean compile
 
       - name: Unit Tests
         run: |
-          mvn test \
-          working-directory: ${{ matrix.service }}
+          working-directory: ${{ matrix.service }}  
+          mvn test 
 
       - name: Integration Tests
         run: |
-          mvn verify \
           working-directory: ${{ matrix.service }}
+          mvn verify 
 
       - name: Build Jar
         run: |
-          mvn package \
           working-directory: ${{ matrix.service }}
+          mvn package
 
       - name: Docker Build Validation
         run: |
