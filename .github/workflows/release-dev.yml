@@ -6,9 +6,7 @@ on:
       - develop
 
 jobs:
-
   build-and-publish:
-
     runs-on: ubuntu-latest
 
     strategy:
@@ -23,7 +21,7 @@ jobs:
       contents: write
       pull-requests: write
 
-        steps:
+    steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-java@v4
@@ -37,7 +35,7 @@ jobs:
             -pl ${{ matrix.service }} \
             -am
 
-            - name: Configure AWS
+      - name: Configure AWS
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE }}
@@ -64,7 +62,8 @@ jobs:
         run: |
           docker push \
             $ECR/${{ matrix.service }}:${{ github.sha }}
-            - name: Capture Digest
+
+      - name: Capture Digest
         id: digest
         run: |
           DIGEST=$(docker inspect \
@@ -77,7 +76,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITOPS_TOKEN }}
         run: |
-
           git clone https://github.com/Emmy-github-webdev/Kubernetes-argocd.git
 
           cd Kubernetes-argocd
