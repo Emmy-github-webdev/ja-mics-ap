@@ -1,0 +1,54 @@
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] ecommerce-microservices                                            [pom]
+[INFO] user-service                                                       [jar]
+[INFO] 
+[INFO] ---------------< com.ecommerce:ecommerce-microservices >----------------
+[INFO] Building ecommerce-microservices 0.0.1-SNAPSHOT                    [1/2]
+[INFO]   from pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ ecommerce-microservices ---
+[INFO] 
+[INFO] ---------------------< com.ecommerce:user-service >---------------------
+[INFO] Building user-service 0.0.1-SNAPSHOT                               [2/2]
+[INFO]   from user-service\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ user-service ---
+[INFO] Deleting C:\Users\ogaem\Desktop\java-application\user-service\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ user-service ---
+[WARNING] Using platform encoding (Cp1252 actually) to copy filtered resources, i.e. build is platform dependent!
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ user-service ---
+[INFO] Changes detected - recompiling the module! :source
+[WARNING] File encoding has not been set, using platform encoding Cp1252, i.e. build is platform dependent!
+[INFO] Compiling 5 source files with javac [debug target 17] to target\classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ user-service ---
+[WARNING] Using platform encoding (Cp1252 actually) to copy filtered resources, i.e. build is platform dependent!
+[INFO] skip non existing resourceDirectory C:\Users\ogaem\Desktop\java-application\user-service\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ user-service ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ user-service ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ user-service ---
+[INFO] Building jar: C:\Users\ogaem\Desktop\java-application\user-service\target\user-service-0.0.1-SNAPSHOT.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for ecommerce-microservices 0.0.1-SNAPSHOT:
+[INFO] 
+[INFO] ecommerce-microservices ............................ SUCCESS [  0.177 s]
+[INFO] user-service ....................................... SUCCESS [  3.594 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  4.158 s
+[INFO] Finished at: 2026-03-27T21:55:44+01:00
+[INFO] ------------------------------------------------------------------------
