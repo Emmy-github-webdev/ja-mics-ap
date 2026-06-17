@@ -60,7 +60,9 @@ jobs:
       - name: Dependency Check
         working-directory: ${{ matrix.service }}
         run: |
-          mvn org.owasp:dependency-check-maven:check
+          mvn org.owasp:dependency-check-maven:check \
+            -Ddependency-check.threads=1 \
+            -DdataDirectory=$HOME/.dependency-check-data
 
       - name: Gitleaks
         uses: gitleaks/gitleaks-action@v2
