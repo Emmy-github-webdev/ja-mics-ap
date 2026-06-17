@@ -48,7 +48,7 @@ jobs:
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
             -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
             -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }} \
-            -Dsonar.projectKey=${{ matrix.service }}
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}_${{ matrix.service }}
 
       - name: Dependency Check
         working-directory: ${{ matrix.service }}
