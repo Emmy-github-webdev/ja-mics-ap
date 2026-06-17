@@ -62,9 +62,10 @@ jobs:
         run: |
           mvn org.owasp:dependency-check-maven:check \
             -Dnvd.api.key=${{ secrets.NVD_API_KEY }} \
-            -Dnvd.api.delay=2000 \
+            -Ddependency-check.dataDirectory=$HOME/.dependency-check-data \
             -Ddependency-check.threads=1 \
-            -Ddependency-check.dataDirectory=$HOME/.dependency-check-data
+            -Dnvd.api.delay=2000 \
+            -DautoUpdate=false
 
       - name: Gitleaks
         uses: gitleaks/gitleaks-action@v2
