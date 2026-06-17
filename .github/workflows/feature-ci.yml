@@ -29,23 +29,23 @@ jobs:
           java-version: 21
 
       - name: Compile
+        working-directory: ${{ matrix.service }}
         run: |
-          working-directory: ${{ matrix.service }}
           mvn clean compile
 
       - name: Unit Tests
+        working-directory: ${{ matrix.service }}
         run: |
-          working-directory: ${{ matrix.service }}  
           mvn test 
 
       - name: Integration Tests
+        working-directory: ${{ matrix.service }}
         run: |
-          working-directory: ${{ matrix.service }}
           mvn verify 
 
       - name: Build Jar
+        working-directory: ${{ matrix.service }}
         run: |
-          working-directory: ${{ matrix.service }}
           mvn package
 
       - name: Docker Build Validation
