@@ -58,12 +58,13 @@ jobs:
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}_${{ matrix.service }}
 
       - name: Dependency Check
-        working-directory: ${{ matrix.service }}
         run: |
           mvn org.owasp:dependency-check-maven:check \
             -Dnvd.api.key=${{ secrets.NVD_API_KEY }} \
-            -Ddependency-check.dataDirectory=$HOME/.dc-${{ matrix.service }} \
-            -Ddependency-check.threads=1
+            -Dnvd.api.delay=2000 \
+            -Ddependency-check.threads=1 \
+            -Ddependency-check.dataDirectory=$HOME/.dependency-check-data \
+            --fail-at-end
 
       - name: Gitleaks
         uses: gitleaks/gitleaks-action@v2
