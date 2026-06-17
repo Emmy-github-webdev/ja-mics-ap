@@ -57,3 +57,4 @@ jobs:
 
       - name: Gitleaks
         uses: gitleaks/gitleaks-action@v2
+        
