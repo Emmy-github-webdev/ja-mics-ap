@@ -20,6 +20,13 @@ jobs:
           - payment-service
           - product-service
 
+    permissions:
+      contents: write
+      pull-requests: write
+      security-events: write
+      id-token: write 
+      issues: write
+
     steps:
 
       - uses: actions/checkout@v4
@@ -57,4 +64,5 @@ jobs:
 
       - name: Gitleaks
         uses: gitleaks/gitleaks-action@v2
-        
+        env:
+          GITHUB_TOKEN: ${{ secrets.JA_MICS_AP_TOKEN }}
