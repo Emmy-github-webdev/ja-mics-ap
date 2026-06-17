@@ -51,6 +51,7 @@ jobs:
       - name: Docker Build Validation
         run: |
           docker build \
+            --build-arg SERVICE_NAME=${{ matrix.service }} \
             -f ${{ matrix.service }}/Dockerfile \
             -t test-image \
             .
