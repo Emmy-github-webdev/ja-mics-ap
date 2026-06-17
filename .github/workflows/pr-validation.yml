@@ -12,6 +12,14 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        service:
+          - user-service
+          - order-service
+          - payment-service
+          - product-service
+
     steps:
 
       - uses: actions/checkout@v4
