@@ -1,0 +1,71 @@
+name: feature-ci
+
+on:
+  push:
+    branches-ignore:
+      - develop
+      - staging
+      - main
+
+jobs:
+  validate:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service:
+          - user-service
+          - order-service
+          - payment-service
+          - product-service
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Compile
+        run: |
+          mvn clean compile \
+            -pl ${{ matrix.service }} \
+            -am
+
+      - name: Unit Tests
+        run: |
+          mvn test \
+            -pl ${{ matrix.service }} \
+            -am
+
+      - name: Integration Tests
+        run: |
+          mvn verify \
+            -pl ${{ matrix.service }} \
+            -am
+
+      - name: Build Jar
+        run: |
+          mvn package \
+            -pl ${{ matrix.service }} \
+            -am
+
+      - name: Docker Build Validation
+        run: |
+          docker build \
+            -f ${{ matrix.service }}/Dockerfile \
+            -t test-image \
+            .
+
+      - name: Secret Scan
+        uses: gitleaks/gitleaks-action@v2
+
+      - name: CodeQL Init
+        uses: github/codeql-action/init@v3
+        with:
+          languages: java
+
+      - name: CodeQL Analyze
+        uses: github/codeql-action/analyze@v3

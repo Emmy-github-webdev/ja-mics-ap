@@ -1,0 +1,83 @@
+--
+-- PostgreSQL database dump
+--
+
+\restrict IcMGT9uxHjQcYrs7W4Gi81MA51tt4kfEgI091ckhNAts6xQFpcdWd8RiBcfLFd9
+
+-- Dumped from database version 18.3
+-- Dumped by pg_dump version 18.3
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: payment_transactions; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.payment_transactions (
+    id bigint NOT NULL,
+    order_id bigint NOT NULL,
+    amount numeric(19,4) NOT NULL,
+    currency character varying(10) NOT NULL,
+    status character varying(50) NOT NULL,
+    processed_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.payment_transactions OWNER TO postgres;
+
+--
+-- Name: payment_transactions_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.payment_transactions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.payment_transactions_id_seq OWNER TO postgres;
+
+--
+-- Name: payment_transactions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.payment_transactions_id_seq OWNED BY public.payment_transactions.id;
+
+
+--
+-- Name: payment_transactions id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.payment_transactions ALTER COLUMN id SET DEFAULT nextval('public.payment_transactions_id_seq'::regclass);
+
+
+--
+-- Name: payment_transactions payment_transactions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.payment_transactions
+    ADD CONSTRAINT payment_transactions_pkey PRIMARY KEY (id);
+
+
+--
+-- PostgreSQL database dump complete
+--
+
+\unrestrict IcMGT9uxHjQcYrs7W4Gi81MA51tt4kfEgI091ckhNAts6xQFpcdWd8RiBcfLFd9
+
