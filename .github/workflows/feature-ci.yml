@@ -24,6 +24,8 @@ jobs:
       contents: write
       pull-requests: write
       security-events: write
+      id-token: write 
+      issues: write
 
     steps:
       - uses: actions/checkout@v4
