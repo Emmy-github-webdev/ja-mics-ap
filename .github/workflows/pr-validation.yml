@@ -22,20 +22,25 @@ jobs:
           java-version: 21
 
       - name: Unit Tests
+        working-directory: ${{ matrix.service }}
         run: mvn test
 
       - name: Integration Tests
+        working-directory: ${{ matrix.service }}
         run: mvn verify
 
       - name: Coverage
+        working-directory: ${{ matrix.service }}
         run: mvn jacoco:report
 
       - name: SonarQube
+        working-directory: ${{ matrix.service }}
         run: |
           mvn sonar:sonar \
             -Dsonar.token=${{ secrets.SONAR_TOKEN }}
 
       - name: Dependency Check
+        working-directory: ${{ matrix.service }}
         run: |
           mvn org.owasp:dependency-check-maven:check
 
