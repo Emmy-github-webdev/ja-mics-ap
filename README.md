@@ -124,3 +124,13 @@ Deploy Staging
 Run Validation Tests
 
 promote-prod.yml
+
+
+ja-mics-ap/
+├── .github/
+│   └── workflows/
+│       └── feature-ci.yml
+├── product-service/
+├── user-service/
+├── payment-service/
+└── order-service/
