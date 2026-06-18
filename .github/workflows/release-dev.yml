@@ -98,7 +98,7 @@ jobs:
             kustomization.yaml
 
           git config user.name "Emmy-github-webdev"
-          git config user.email "ogahemmanuel75@gmail.com"
+          git config user.email ${{ secrets.USER_EMAIL }}
 
           git add .
 

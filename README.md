@@ -129,7 +129,11 @@ promote-prod.yml
 ja-mics-ap/
 ├── .github/
 │   └── workflows/
-│       └── feature-ci.yml
+│       └── pr-validation.yml
+│       └── release-dev.yml
+│       └── promote-staging.yml
+│       └── promote-prod.yml
+│       
 ├── product-service/
 ├── user-service/
 ├── payment-service/

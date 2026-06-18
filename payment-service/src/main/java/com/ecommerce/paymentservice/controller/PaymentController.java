@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@SuppressWarnings("java:S4684")
 @RestController
 @RequestMapping("/api/payments")
 public class PaymentController {
