@@ -32,9 +32,9 @@ jobs:
       - name: Checkout GitOps Repository
         uses: actions/checkout@v4
         with:
-          repository: company/gitops-repo
-          token: ${{ secrets.GITOPS_TOKEN }}
-          path: gitops
+          repository: Emmy-github-webdev/Kubernetes-argocd
+          token: ${{ secrets.JA_MICS_AP_TOKEN }}
+          path: Kubernetes-argocd
 
       - name: Read Staging Image Tag
         id: image
@@ -49,7 +49,7 @@ jobs:
       - name: Create Promotion Branch
         run: |
 
-          cd gitops
+          cd Kubernetes-argocd
 
           git checkout -b \
             prod-${{ matrix.service }}-${{ github.sha }}
@@ -64,10 +64,10 @@ jobs:
       - name: Commit Changes
         run: |
 
-          cd gitops
+          cd Kubernetes-argocd
 
-          git config user.name github-actions
-          git config user.email github-actions@company.com
+          git config user.name "Emmy-github-webdev"
+          git config user.email "ogahemmanuel75@gmail.com"
 
           git add .
 
@@ -77,16 +77,16 @@ jobs:
       - name: Push Branch
         run: |
 
-          cd gitops
+          cd Kubernetes-argocd
 
           git push origin HEAD
 
-      - name: Create GitOps PR
+      - name: Create Kubernetes-argocd PR
         env:
-          GH_TOKEN: ${{ secrets.GITOPS_TOKEN }}
+          GH_TOKEN: ${{ secrets.JA_MICS_AP_TOKEN }}
         run: |
 
-          cd gitops
+          cd Kubernetes-argocd
 
           gh pr create \
             --title "Production Release - ${{ matrix.service }}" \
