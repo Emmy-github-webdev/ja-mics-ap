@@ -57,21 +57,24 @@ jobs:
             -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }} \
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}_${{ matrix.service }}
 
-      - name: Cache OWASP DB
+      - name: Restore OWASP DB
         uses: actions/cache@v4
         with:
           path: ~/.dependency-check-data
           key: owasp-${{ runner.os }}-dc12
 
+      - name: Initialize OWASP DB
+        run: |
+          mvn org.owasp:dependency-check-maven:update-only \
+            -Dnvd.api.key=${{ secrets.NVD_API_KEY }} \
+            -Ddependency-check.dataDirectory=$HOME/.dependency-check-data
+
       - name: Dependency Check
         working-directory: ${{ matrix.service }}
         run: |
           mvn org.owasp:dependency-check-maven:check \
-            -Dnvd.api.key=${{ secrets.NVD_API_KEY }} \
             -Ddependency-check.dataDirectory=$HOME/.dependency-check-data \
             -Ddependency-check.threads=4 \
-            -Dnvd.maxRetryCount=10 \
-            -Dnvd.delay=10000 \
             -DautoUpdate=false
 
       - name: Checkout
