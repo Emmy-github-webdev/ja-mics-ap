@@ -62,8 +62,6 @@ jobs:
         with:
           path: ~/.dependency-check-data
           key: owasp-${{ runner.os }}-dc12
-          restore-keys: |
-            owasp-${{ runner.os }}-
 
       - name: Dependency Check
         working-directory: ${{ matrix.service }}
@@ -72,8 +70,8 @@ jobs:
             -Dnvd.api.key=${{ secrets.NVD_API_KEY }} \
             -Ddependency-check.dataDirectory=$HOME/.dependency-check-data \
             -Ddependency-check.threads=4 \
-            -Dnvd.maxRetryCount=10 \
-            -Dnvd.delay=10000
+            -Dnvd.maxRetryCount=20 \
+            -Dnvd.delay=30000
 
       - name: Checkout
         uses: actions/checkout@v4
