@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/payments")
@@ -52,7 +51,7 @@ public class PaymentController {
                 paymentService.listPayments()
                         .stream()
                         .map(this::toResponse)
-                        .collect(Collectors.toList());
+                        .toList();
 
         return ResponseEntity.ok(responses);
     }
@@ -70,4 +69,5 @@ public class PaymentController {
 
         return response;
     }
+
 }
