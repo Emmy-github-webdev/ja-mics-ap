@@ -1,21 +1,15 @@
-package com.ecommerce.paymentservice.model;
+package com.ecommerce.paymentservice.dto;
 
-import jakarta.persistence.*;
 import java.time.Instant;
 
-@Entity
-@Table(name = "payment_transactions")
-public class PaymentTransaction {
+public class PaymentResponse {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private Long orderId;
     private Double amount;
     private String currency;
     private String status;
-    private Instant processedAt = Instant.now();
+    private Instant processedAt;
 
     public Long getId() {
         return id;
