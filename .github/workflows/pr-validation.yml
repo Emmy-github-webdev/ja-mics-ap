@@ -32,11 +32,9 @@ jobs:
         run: |
           mvn org.owasp:dependency-check-maven:12.2.2:update-only \
             -DnvdApiKey=${{ secrets.NVD_API_KEY }} \
-            -DskipTests \
-            -Ddependency-check.dataDirectory=$HOME/.dependency-check-data \
-            -Dnvd.maxRetryCount=20 \
-            -Dnvd.delay=30000 \
-            -DnvdApiDelay=5000
+            -DnvdApiDelay=5000 \
+            -Dthreads=1 \
+            -DdataDirectory=$HOME/.dependency-check-data
 
 
   quality-gate:
