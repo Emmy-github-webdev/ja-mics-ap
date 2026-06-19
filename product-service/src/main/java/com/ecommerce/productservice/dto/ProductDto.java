@@ -11,6 +11,7 @@ public class ProductDto {
     private Integer stock;
 
     public ProductDto() {
+        // Required by Jackson for JSON deserialization
     }
 
     public Long getId() {
