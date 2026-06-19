@@ -25,10 +25,13 @@ jobs:
         with:
           path: ~/.dependency-check-data
           key: owasp-${{ runner.os }}-dc12
+          restore-keys: |
+            owasp-${{ runner.os }}-
 
       - name: Update OWASP DB
         run: |
-          mvn org.owasp:dependency-check-maven \
+          mvn org.owasp:dependency-check-maven:update-only \
+            -DskipTests \
             -Dnvd.api.key=${{ secrets.NVD_API_KEY }} \
             -Ddependency-check.dataDirectory=$HOME/.dependency-check-data \
             -Dnvd.maxRetryCount=20 \
