@@ -28,17 +28,11 @@ jobs:
 
       - name: Update OWASP DB
         run: |
-          mvn org.owasp:dependency-check-maven:update-only \
+          mvn org.owasp:dependency-check-maven \
             -Dnvd.api.key=${{ secrets.NVD_API_KEY }} \
             -Ddependency-check.dataDirectory=$HOME/.dependency-check-data \
             -Dnvd.maxRetryCount=20 \
             -Dnvd.delay=30000
-
-      - name: Save OWASP DB
-        uses: actions/cache@v4
-        with:
-          path: ~/.dependency-check-data
-          key: owasp-${{ runner.os }}-dc12
 
 
   quality-gate:
