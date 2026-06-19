@@ -30,9 +30,9 @@ jobs:
 
       - name: Update OWASP DB
         run: |
-          mvn org.owasp:dependency-check-maven:update-only \
+          mvn org.owasp:dependency-check-maven:12.2.2:update-only \
+            -DnvdApiKey=${{ secrets.NVD_API_KEY }} \
             -DskipTests \
-            -Dnvd.api.key=${{ secrets.NVD_API_KEY }} \
             -Ddependency-check.dataDirectory=$HOME/.dependency-check-data \
             -Dnvd.maxRetryCount=20 \
             -Dnvd.delay=30000
