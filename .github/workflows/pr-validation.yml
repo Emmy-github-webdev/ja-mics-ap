@@ -68,9 +68,9 @@ jobs:
         run: |
           mvn org.owasp:dependency-check-maven:check \
             -Dnvd.api.key=${{ secrets.NVD_API_KEY }} \
-            -Ddependency-check.dataDirectory=$HOME/.dependency-check-data \
-            -Ddependency-check.threads=1 \
-            -Dnvd.api.delay=2000
+            -Ddependency-check.dataDirectory=$HOME/.dependency-check-data 
+            # -Ddependency-check.threads=1 \
+            # -Dnvd.api.delay=2000
 
       - name: Checkout
         uses: actions/checkout@v4
