@@ -35,7 +35,8 @@ jobs:
             -DskipTests \
             -Ddependency-check.dataDirectory=$HOME/.dependency-check-data \
             -Dnvd.maxRetryCount=20 \
-            -Dnvd.delay=30000
+            -Dnvd.delay=30000 \
+            -DnvdApiDelay=5000
 
 
   quality-gate:
