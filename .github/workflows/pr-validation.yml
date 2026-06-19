@@ -39,7 +39,7 @@ jobs:
 
   quality-gate:
 
-    needs: owasp-db
+    # needs: owasp-db
     runs-on: ubuntu-latest
 
     strategy:
