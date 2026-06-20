@@ -1,6 +1,6 @@
 package com.ecommerce.paymentservice.controller;
 
-import com.ecommerce.paymentservice.dto.PaymentRequestDto;
+import com.ecommerce.paymentservice.dto.PaymentRequest;
 import com.ecommerce.paymentservice.dto.PaymentResponseDto;
 import com.ecommerce.paymentservice.mapper.PaymentMapper;
 import com.ecommerce.paymentservice.model.PaymentTransaction;
@@ -22,7 +22,7 @@ public class PaymentController {
 
     @PostMapping
     public ResponseEntity<PaymentResponseDto> createPayment(
-            @RequestBody PaymentRequestDto request) {
+            @RequestBody PaymentRequest request) {
 
         PaymentTransaction transaction = new PaymentTransaction();
         transaction.setOrderId(request.getOrderId());
