@@ -1,6 +1,7 @@
 package com.ecommerce.productservice.service;
 
-import com.ecommerce.productservice.model.Product;
+import com.ecommerce.productservice.dto.ProductDto;
+import com.ecommerce.productservice.mapper.ProductMapper;
 import com.ecommerce.productservice.repository.ProductRepository;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -12,6 +13,7 @@ import java.util.Optional;
 
 @Service
 public class ProductService {
+
     private final ProductRepository productRepository;
 
     public ProductService(ProductRepository productRepository) {
@@ -20,17 +22,28 @@ public class ProductService {
 
     @Transactional
     @CacheEvict(value = "products", allEntries = true)
-    public Product save(Product product) {
-        return productRepository.save(product);
+    public ProductDto save(ProductDto dto) {
+
+        var saved = productRepository.save(
+                ProductMapper.toEntity(dto)
+        );
+
+        return ProductMapper.toDto(saved);
     }
 
     @Cacheable(value = "products", key = "#id")
-    public Optional<Product> findById(Long id) {
-        return productRepository.findById(id);
+    public Optional<ProductDto> findById(Long id) {
+
+        return productRepository.findById(id)
+                .map(ProductMapper::toDto);
     }
 
     @Cacheable(value = "products")
-    public List<Product> findAll() {
-        return productRepository.findAll();
+    public List<ProductDto> findAll() {
+
+        return productRepository.findAll()
+                .stream()
+                .map(ProductMapper::toDto)
+                .toList();
     }
 }
