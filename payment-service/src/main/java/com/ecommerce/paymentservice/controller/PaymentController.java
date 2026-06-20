@@ -24,13 +24,12 @@ public class PaymentController {
     public ResponseEntity<PaymentResponseDto> createPayment(
             @RequestBody PaymentRequest request) {
 
-        PaymentTransaction transaction = new PaymentTransaction();
-        transaction.setOrderId(request.getOrderId());
-        transaction.setAmount(request.getAmount());
-        transaction.setCurrency(request.getCurrency());
+        PaymentTransaction tx = new PaymentTransaction();
+        tx.setOrderId(request.getOrderId());
+        tx.setAmount(request.getAmount());
+        tx.setCurrency(request.getCurrency());
 
-        PaymentTransaction saved =
-                paymentService.processPayment(transaction);
+        PaymentTransaction saved = paymentService.processPayment(tx);
 
         return ResponseEntity.ok(PaymentMapper.toDto(saved));
     }
