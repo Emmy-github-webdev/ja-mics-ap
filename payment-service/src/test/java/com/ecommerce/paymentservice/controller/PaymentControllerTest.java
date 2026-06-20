@@ -1,12 +1,13 @@
 package com.ecommerce.paymentservice.controller;
 
-import com.ecommerce.paymentservice.dto.PaymentRequestDto;
+import com.ecommerce.paymentservice.dto.PaymentRequest;
 import com.ecommerce.paymentservice.model.PaymentTransaction;
 import com.ecommerce.paymentservice.service.PaymentService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -34,7 +35,7 @@ class PaymentControllerTest {
     @Test
     void shouldCreatePayment() throws Exception {
 
-        PaymentRequestDto request = new PaymentRequestDto();
+        PaymentRequest request = new PaymentRequest();
         request.setOrderId(1L);
         request.setAmount(100.0);
         request.setCurrency("USD");
@@ -46,7 +47,7 @@ class PaymentControllerTest {
         tx.setCurrency("USD");
         tx.setStatus("SUCCESS");
 
-        when(paymentService.processPayment(any()))
+        when(paymentService.processPayment(any(PaymentTransaction.class)))
                 .thenReturn(tx);
 
         mockMvc.perform(post("/payments")
@@ -73,7 +74,8 @@ class PaymentControllerTest {
 
         mockMvc.perform(get("/payments/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1));
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.orderId").value(1));
     }
 
     @Test
