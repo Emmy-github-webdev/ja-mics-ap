@@ -36,8 +36,7 @@ public class PaymentController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PaymentResponseDto> getPayment(
-            @PathVariable Long id) {
+    public ResponseEntity<PaymentResponseDto> getPayment(@PathVariable Long id) {
 
         return paymentService.findById(id)
                 .map(PaymentMapper::toDto)
@@ -48,12 +47,11 @@ public class PaymentController {
     @GetMapping
     public ResponseEntity<List<PaymentResponseDto>> listPayments() {
 
-        List<PaymentResponseDto> responses =
+        return ResponseEntity.ok(
                 paymentService.listPayments()
                         .stream()
                         .map(PaymentMapper::toDto)
-                        .toList();
-
-        return ResponseEntity.ok(responses);
+                        .toList()
+        );
     }
 }
