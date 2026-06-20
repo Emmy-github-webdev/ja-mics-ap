@@ -37,35 +37,50 @@
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Testing --> 
+        <dependency> 
+            <groupId>org.springframework.boot</groupId> 
+            <artifactId>spring-boot-starter-test</artifactId> 
+            <scope>test</scope> 
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
 
-            <!-- JACoCo coverage plugin -->
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.12</version>
+            <plugin> 
+                <groupId>org.jacoco</groupId> 
+                <artifactId>jacoco-maven-plugin</artifactId> 
+                <version>0.8.12</version> 
 
-                <executions>
-                    <!-- attach agent during tests -->
-                    <execution>
-                        <id>prepare-agent</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-
-                    <!-- generate report after tests -->
-                    <execution>
-                        <id>report</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                </executions>
+                <executions> 
+                    <!-- Attach JaCoCo agent before tests --> 
+                    <execution> 
+                        <id>prepare-agent</id> 
+                        <goals> 
+                            <goal>prepare-agent</goal> 
+                        </goals> 
+                    </execution> 
+                    <!-- Generate XML and HTML reports after verify --> 
+                    <execution> 
+                        <id>report</id> 
+                        <phase>verify</phase> 
+                        <goals> 
+                            <goal>report</goal> 
+                        </goals> 
+                        <configuration> 
+                            <formats> 
+                                <format>XML</format> 
+                                    <format>HTML</format> 
+                            </formats> 
+                        </configuration> 
+                    </execution> 
+                </executions> 
             </plugin>
 
         </plugins>
