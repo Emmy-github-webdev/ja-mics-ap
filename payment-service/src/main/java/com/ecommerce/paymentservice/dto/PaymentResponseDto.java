@@ -2,7 +2,7 @@ package com.ecommerce.paymentservice.dto;
 
 import java.time.Instant;
 
-public class PaymentResponse {
+public class PaymentResponseDto {
 
     private Long id;
     private Long orderId;

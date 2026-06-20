@@ -1,7 +1,8 @@
 package com.ecommerce.paymentservice.controller;
 
-import com.ecommerce.paymentservice.dto.PaymentRequest;
-import com.ecommerce.paymentservice.dto.PaymentResponse;
+import com.ecommerce.paymentservice.dto.PaymentRequestDto;
+import com.ecommerce.paymentservice.dto.PaymentResponseDto;
+import com.ecommerce.paymentservice.mapper.PaymentMapper;
 import com.ecommerce.paymentservice.model.PaymentTransaction;
 import com.ecommerce.paymentservice.service.PaymentService;
 import org.springframework.http.ResponseEntity;
@@ -20,8 +21,8 @@ public class PaymentController {
     }
 
     @PostMapping
-    public ResponseEntity<PaymentResponse> createPayment(
-            @RequestBody PaymentRequest request) {
+    public ResponseEntity<PaymentResponseDto> createPayment(
+            @RequestBody PaymentRequestDto request) {
 
         PaymentTransaction transaction = new PaymentTransaction();
         transaction.setOrderId(request.getOrderId());
@@ -31,43 +32,28 @@ public class PaymentController {
         PaymentTransaction saved =
                 paymentService.processPayment(transaction);
 
-        return ResponseEntity.ok(toResponse(saved));
+        return ResponseEntity.ok(PaymentMapper.toDto(saved));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PaymentResponse> getPayment(
+    public ResponseEntity<PaymentResponseDto> getPayment(
             @PathVariable Long id) {
 
         return paymentService.findById(id)
-                .map(this::toResponse)
+                .map(PaymentMapper::toDto)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping
-    public ResponseEntity<List<PaymentResponse>> listPayments() {
+    public ResponseEntity<List<PaymentResponseDto>> listPayments() {
 
-        List<PaymentResponse> responses =
+        List<PaymentResponseDto> responses =
                 paymentService.listPayments()
                         .stream()
-                        .map(this::toResponse)
+                        .map(PaymentMapper::toDto)
                         .toList();
 
         return ResponseEntity.ok(responses);
     }
-
-    private PaymentResponse toResponse(PaymentTransaction transaction) {
-
-        PaymentResponse response = new PaymentResponse();
-
-        response.setId(transaction.getId());
-        response.setOrderId(transaction.getOrderId());
-        response.setAmount(transaction.getAmount());
-        response.setCurrency(transaction.getCurrency());
-        response.setStatus(transaction.getStatus());
-        response.setProcessedAt(transaction.getProcessedAt());
-
-        return response;
-    }
-
 }

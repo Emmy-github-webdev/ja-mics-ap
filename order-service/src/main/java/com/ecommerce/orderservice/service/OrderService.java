@@ -1,8 +1,8 @@
 package com.ecommerce.orderservice.service;
 
-import com.ecommerce.orderservice.dto.OrderItemDto;
 import com.ecommerce.orderservice.dto.OrderRequestDto;
 import com.ecommerce.orderservice.dto.OrderResponseDto;
+import com.ecommerce.orderservice.mapper.OrderMapper;
 import com.ecommerce.orderservice.model.Order;
 import com.ecommerce.orderservice.model.OrderItem;
 import com.ecommerce.orderservice.repository.OrderRepository;
@@ -53,46 +53,19 @@ public class OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
-        return toResponseDto(savedOrder);
+        return OrderMapper.toDto(savedOrder);
     }
 
     @Cacheable(value = "orders", key = "#id")
     public Optional<OrderResponseDto> getOrder(Long id) {
         return orderRepository.findById(id)
-                .map(this::toResponseDto);
+                .map(OrderMapper::toDto);
     }
 
     public List<OrderResponseDto> listOrders() {
         return orderRepository.findAll()
                 .stream()
-                .map(this::toResponseDto)
+                .map(OrderMapper::toDto)
                 .toList();
-    }
-
-    private OrderResponseDto toResponseDto(Order order) {
-
-        OrderResponseDto dto = new OrderResponseDto();
-
-        dto.setId(order.getId());
-        dto.setCustomerEmail(order.getCustomerEmail());
-        dto.setTotalAmount(order.getTotalAmount());
-        dto.setStatus(order.getStatus());
-        dto.setCreatedAt(order.getCreatedAt());
-
-        List<OrderItemDto> itemDtos = order.getItems()
-                .stream()
-                .map(item -> {
-                    OrderItemDto itemDto = new OrderItemDto();
-                    itemDto.setProductId(item.getProductId());
-                    itemDto.setProductName(item.getProductName());
-                    itemDto.setQuantity(item.getQuantity());
-                    itemDto.setUnitPrice(item.getUnitPrice());
-                    return itemDto;
-                })
-                .toList();
-
-        dto.setItems(itemDtos);
-
-        return dto;
     }
 }

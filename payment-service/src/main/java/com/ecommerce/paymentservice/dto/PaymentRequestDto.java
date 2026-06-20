@@ -1,6 +1,6 @@
 package com.ecommerce.paymentservice.dto;
 
-public class PaymentRequest {
+public class PaymentRequestDto {
 
     private Long orderId;
     private Double amount;

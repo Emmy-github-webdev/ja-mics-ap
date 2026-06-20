@@ -2,6 +2,7 @@ package com.ecommerce.userservice.controller;
 
 import com.ecommerce.userservice.dto.UserRegistrationRequest;
 import com.ecommerce.userservice.dto.UserResponse;
+import com.ecommerce.userservice.mapper.UserMapper;
 import com.ecommerce.userservice.model.User;
 import com.ecommerce.userservice.service.UserService;
 import jakarta.validation.Valid;
@@ -20,21 +21,12 @@ public class UserController {
         this.userService = userService;
     }
 
-    private UserResponse toResponse(User user) {
-        return new UserResponse(
-                user.getId(),
-                user.getEmail(),
-                user.getFullName(),
-                user.getCreatedAt()
-        );
-    }
-
     @PostMapping("/register")
     public ResponseEntity<UserResponse> register(
             @Valid @RequestBody UserRegistrationRequest request) {
 
         User saved = userService.register(request);
-        return ResponseEntity.ok(toResponse(saved));
+        return ResponseEntity.ok(UserMapper.toResponse(saved));
     }
 
     @GetMapping("/{email}")
@@ -42,7 +34,7 @@ public class UserController {
             @PathVariable String email) {
 
         return userService.findByEmail(email)
-                .map(this::toResponse)
+                .map(UserMapper::toResponse)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -52,7 +44,7 @@ public class UserController {
 
         List<UserResponse> users = userService.findAll()
                 .stream()
-                .map(this::toResponse)
+                .map(UserMapper::toResponse)
                 .toList();
 
         return ResponseEntity.ok(users);

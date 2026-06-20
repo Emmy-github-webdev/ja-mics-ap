@@ -1,6 +1,6 @@
 package com.ecommerce.paymentservice.controller;
 
-import com.ecommerce.paymentservice.dto.PaymentRequest;
+import com.ecommerce.paymentservice.dto.PaymentRequestDto;
 import com.ecommerce.paymentservice.model.PaymentTransaction;
 import com.ecommerce.paymentservice.service.PaymentService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,7 +34,7 @@ class PaymentControllerTest {
     @Test
     void shouldCreatePayment() throws Exception {
 
-        PaymentRequest request = new PaymentRequest();
+        PaymentRequestDto request = new PaymentRequestDto();
         request.setOrderId(1L);
         request.setAmount(100.0);
         request.setCurrency("USD");
