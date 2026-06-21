@@ -20,6 +20,13 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      security-events: write
+      id-token: write 
+      issues: write
+
+    env:
+      AWS_REGION: "us-east-1"
+      ECR: "579871530627.dkr.ecr.us-east-1.amazonaws.com/test"
 
     steps:
       - uses: actions/checkout@v4
@@ -30,24 +37,24 @@ jobs:
           java-version: 21
 
       - name: Build
+        working-directory: ${{ matrix.service }}
         run: |
-          mvn clean package \
-            -pl ${{ matrix.service }} \
-            -am
+          mvn clean package
 
       - name: Configure AWS
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE }}
-          aws-region: eu-central-1
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Login ECR
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build Image
+        working-directory: ${{ matrix.service }}
         run: |
           docker build \
-            -f ${{ matrix.service }}/Dockerfile \
+            -f Dockerfile \
             -t $ECR/${{ matrix.service }}:${{ github.sha }} \
             .
 
@@ -55,7 +62,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ env.ECR }}/${{ matrix.service }}:${{ github.sha }}
-          severity: CRITICAL,HIGH
+          severity: CRITICAL
           exit-code: 1
 
       - name: Push Image
@@ -74,9 +81,9 @@ jobs:
 
       - name: Update GitOps Repo
         env:
-          GH_TOKEN: ${{ secrets.GITOPS_TOKEN }}
+          GH_TOKEN: ${{ secrets.JA_MICS_AP_TOKEN }}
         run: |
-          git clone https://github.com/Emmy-github-webdev/Kubernetes-argocd.git
+          git clone https://x-access-token:${GH_TOKEN}@github.com/Emmy-github-webdev/Kubernetes-argocd.git
 
           cd Kubernetes-argocd
 
@@ -90,8 +97,8 @@ jobs:
             "s/newTag:.*/newTag: ${{ github.sha }}/" \
             kustomization.yaml
 
-          git config user.name github-actions
-          git config user.email github-actions@company.com
+          git config user.name "Emmy-github-webdev"
+          git config user.email "${{ secrets.USER_EMAIL }}"
 
           git add .
 

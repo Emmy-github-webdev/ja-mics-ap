@@ -1,6 +1,7 @@
 package com.ecommerce.orderservice.controller;
 
-import com.ecommerce.orderservice.model.Order;
+import com.ecommerce.orderservice.dto.OrderResponseDto;
+import com.ecommerce.orderservice.dto.OrderRequestDto;
 import com.ecommerce.orderservice.service.OrderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -8,8 +9,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/orders")
+@RequestMapping("/orders")
 public class OrderController {
+
     private final OrderService orderService;
 
     public OrderController(OrderService orderService) {
@@ -17,19 +19,21 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<Order> createOrder(@RequestBody Order order) {
-        return ResponseEntity.ok(orderService.createOrder(order));
+    public ResponseEntity<OrderResponseDto> createOrder(
+            @RequestBody OrderRequestDto request) {
+
+        return ResponseEntity.ok(orderService.createOrder(request));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Order> getOrder(@PathVariable Long id) {
+    public ResponseEntity<OrderResponseDto> getOrder(@PathVariable Long id) {
         return orderService.getOrder(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping
-    public ResponseEntity<List<Order>> listOrders() {
+    public ResponseEntity<List<OrderResponseDto>> listOrders() {
         return ResponseEntity.ok(orderService.listOrders());
     }
 }

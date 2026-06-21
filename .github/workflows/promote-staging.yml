@@ -28,66 +28,79 @@ jobs:
       - name: Checkout GitOps Repository
         uses: actions/checkout@v4
         with:
-          repository: company/gitops-repo
-          token: ${{ secrets.GITOPS_TOKEN }}
-          path: gitops
+          repository: Emmy-github-webdev/Kubernetes-argocd
+          token: ${{ secrets.JA_MICS_AP_TOKEN }}
+          path: Kubernetes-argocd
 
       - name: Read Current Dev Image Tag
         id: image
         run: |
           TAG=$(grep newTag \
-            gitops/apps/${{ matrix.service }}/overlays/dev/kustomization.yaml \
+            Kubernetes-argocd/apps/${{ matrix.service }}/overlays/dev/kustomization.yaml \
             | awk '{print $2}')
 
           echo "tag=$TAG" >> $GITHUB_OUTPUT
 
       - name: Create Promotion Branch
         run: |
-          cd gitops
+          BRANCH=staging-${{ matrix.service }}-${{ github.sha }}
 
-          git checkout -b \
-            staging-${{ matrix.service }}-${{ github.sha }}
+          echo "BRANCH=$BRANCH" >> $GITHUB_ENV
+
+          cd Kubernetes-argocd
+
+          git checkout -b $BRANCH
 
       - name: Update Staging Overlay
         run: |
           sed -i \
             "s/newTag:.*/newTag: ${{ steps.image.outputs.tag }}/" \
-            gitops/apps/${{ matrix.service }}/overlays/staging/kustomization.yaml
+            Kubernetes-argocd/apps/${{ matrix.service }}/overlays/staging/kustomization.yaml
 
       - name: Commit Changes
         run: |
-          cd gitops
+          cd Kubernetes-argocd
 
-          git config user.name github-actions
-          git config user.email github-actions@company.com
+          git config user.name "Emmy-github-webdev"
+          git config user.email "ogahemmanuel75@gmail.com"
 
           git add .
 
+          git diff --cached --quiet || \
           git commit \
             -m "Promote ${{ matrix.service }} to staging"
 
       - name: Push Branch
         run: |
-          cd gitops
-          git push origin HEAD
+          cd Kubernetes-argocd
 
-      - name: Create GitOps PR
+          git push origin $BRANCH
+
+      - name: Create Pull Request
         env:
-          GH_TOKEN: ${{ secrets.GITOPS_TOKEN }}
+          GH_TOKEN: ${{ secrets.JA_MICS_AP_TOKEN }}
         run: |
-          cd gitops
+          cd Kubernetes-argocd
 
           gh pr create \
+            --base staging \
+            --head $BRANCH \
             --title "Promote ${{ matrix.service }} to staging" \
-            --body "Promoting validated image from dev to staging"
+            --body "Promoting image tag ${{ steps.image.outputs.tag }} from dev to staging"
 
-
-    staging-validation:
-
+  staging-validation:
 
     needs: promote
 
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service:
+          - user-service
+          - order-service
+          - payment-service
+          - product-service
 
     steps:
 
@@ -95,7 +108,7 @@ jobs:
 
       - name: Wait for ArgoCD Deployment
         run: |
-          echo "Waiting for staging deployment..."
+          echo "Waiting for staging deployment of ${{ matrix.service }}..."
           sleep 180
 
       - name: Smoke Tests
@@ -124,4 +137,3 @@ jobs:
             ghcr.io/zaproxy/zaproxy:stable \
             zap-baseline.py \
             -t https://staging.company.com
-
