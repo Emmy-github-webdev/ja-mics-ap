@@ -83,7 +83,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITOPS_TOKEN }}
         run: |
-          git clone https://github.com/Emmy-github-webdev/Kubernetes-argocd.git
+          git clone https://x-access-token:${GH_TOKEN}@github.com/Emmy-github-webdev/Kubernetes-argocd.git
 
           cd Kubernetes-argocd
 
@@ -98,7 +98,7 @@ jobs:
             kustomization.yaml
 
           git config user.name "Emmy-github-webdev"
-          git config user.email ${{ secrets.USER_EMAIL }}
+          git config user.email "${{ secrets.USER_EMAIL }}"
 
           git add .
 
