@@ -83,7 +83,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITOPS_TOKEN }}
         run: |
-          git clone https://x-access-token:${GH_TOKEN}@github.com/Emmy-github-webdev/Kubernetes-argocd.git
+          git clone https://x-access-token:${JA_MICS_AP_TOKEN}@github.com/Emmy-github-webdev/Kubernetes-argocd.git
 
           cd Kubernetes-argocd
 
