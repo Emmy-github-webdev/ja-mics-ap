@@ -30,8 +30,7 @@ public class UserController {
     }
 
     @GetMapping("/{email}")
-    public ResponseEntity<UserResponse> findByEmail(
-            @PathVariable String email) {
+    public ResponseEntity<UserResponse> findByEmail(@PathVariable String email) {
 
         return userService.findByEmail(email)
                 .map(UserMapper::toResponse)
@@ -42,11 +41,11 @@ public class UserController {
     @GetMapping
     public ResponseEntity<List<UserResponse>> listUsers() {
 
-        List<UserResponse> users = userService.findAll()
-                .stream()
-                .map(UserMapper::toResponse)
-                .toList();
-
-        return ResponseEntity.ok(users);
+        return ResponseEntity.ok(
+                userService.findAll()
+                        .stream()
+                        .map(UserMapper::toResponse)
+                        .toList()
+        );
     }
 }

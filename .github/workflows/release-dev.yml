@@ -54,7 +54,7 @@ jobs:
         working-directory: ${{ matrix.service }}
         run: |
           docker build \
-            -f ${{ matrix.service }}/Dockerfile \
+            -f Dockerfile \
             -t $ECR/${{ matrix.service }}:${{ github.sha }} \
             .
 

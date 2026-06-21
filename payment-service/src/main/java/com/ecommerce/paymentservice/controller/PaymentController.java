@@ -1,6 +1,6 @@
 package com.ecommerce.paymentservice.controller;
 
-import com.ecommerce.paymentservice.dto.PaymentRequestDto;
+import com.ecommerce.paymentservice.dto.PaymentRequest;
 import com.ecommerce.paymentservice.dto.PaymentResponseDto;
 import com.ecommerce.paymentservice.mapper.PaymentMapper;
 import com.ecommerce.paymentservice.model.PaymentTransaction;
@@ -22,22 +22,20 @@ public class PaymentController {
 
     @PostMapping
     public ResponseEntity<PaymentResponseDto> createPayment(
-            @RequestBody PaymentRequestDto request) {
+            @RequestBody PaymentRequest request) {
 
-        PaymentTransaction transaction = new PaymentTransaction();
-        transaction.setOrderId(request.getOrderId());
-        transaction.setAmount(request.getAmount());
-        transaction.setCurrency(request.getCurrency());
+        PaymentTransaction tx = new PaymentTransaction();
+        tx.setOrderId(request.getOrderId());
+        tx.setAmount(request.getAmount());
+        tx.setCurrency(request.getCurrency());
 
-        PaymentTransaction saved =
-                paymentService.processPayment(transaction);
+        PaymentTransaction saved = paymentService.processPayment(tx);
 
         return ResponseEntity.ok(PaymentMapper.toDto(saved));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PaymentResponseDto> getPayment(
-            @PathVariable Long id) {
+    public ResponseEntity<PaymentResponseDto> getPayment(@PathVariable Long id) {
 
         return paymentService.findById(id)
                 .map(PaymentMapper::toDto)
@@ -48,12 +46,11 @@ public class PaymentController {
     @GetMapping
     public ResponseEntity<List<PaymentResponseDto>> listPayments() {
 
-        List<PaymentResponseDto> responses =
+        return ResponseEntity.ok(
                 paymentService.listPayments()
                         .stream()
                         .map(PaymentMapper::toDto)
-                        .toList();
-
-        return ResponseEntity.ok(responses);
+                        .toList()
+        );
     }
 }
