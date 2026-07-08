@@ -192,4 +192,3 @@ aws eks get-token \
 
   # If this command fails, it usually tells you exactly why authentication isn't working.
 ```
-
