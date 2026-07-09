@@ -193,3 +193,6 @@ aws eks get-token \
   # If this command fails, it usually tells you exactly why authentication isn't working.
 ```
 
+579871530627.dkr.ecr.us-east-1.amazonaws.com/ja-mics-ap/order-service:c84b5d46cceb7ccfcb9bd6dec34c8e3814b58096
+
+579871530627.dkr.ecr.us-east-1.amazonaws.com/ja-mics-ap/order-service:5e8c536ef5b688df7bb54b42d45d5a2285ec7de2
