@@ -14,9 +14,15 @@ WORKDIR /app
 
 COPY --from=build /app/target/*.jar app.jar
 
-RUN addgroup --system spring && adduser --system spring --ingroup spring
+RUN groupadd --gid 10001 spring && \
+    useradd \
+      --uid 10001 \
+      --gid spring \
+      --create-home \
+      --shell /usr/sbin/nologin \
+      spring
 
-USER spring:spring
+USER 10001:10001
 
 EXPOSE 8082
 ENTRYPOINT ["java","-jar","app.jar"]
