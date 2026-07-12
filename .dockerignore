@@ -1,6 +1,10 @@
 target
 **/target
 **/**/target
+order-service/target
+payment-service/target  
+product-service/target
+user-service/target
 .mvn
 .git
 .gitignore
