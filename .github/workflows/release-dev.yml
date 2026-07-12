@@ -97,15 +97,9 @@ jobs:
             "s/newTag:.*/newTag: ${{ github.sha }}/" \
             kustomization.yaml
 
-          sed -i \
-            "s/newTag:.*/newTag: ${{ github.sha }}/" \
-            image-patch.yaml
-
           echo "Updated kustomization.yaml:"
           cat kustomization.yaml
 
-          echo "Updated image-patch.yaml:"
-          cat image-patch.yaml
 
           git config user.name "Emmy-github-webdev"
           git config user.email "${{ secrets.USER_EMAIL }}"
