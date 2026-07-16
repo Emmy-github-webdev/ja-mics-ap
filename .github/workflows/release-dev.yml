@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - develop
+      - staging
+      - main
 
 jobs:
   build-and-publish:
@@ -79,6 +81,17 @@ jobs:
 
           echo "digest=$DIGEST" >> $GITHUB_OUTPUT
 
+      - name: Determine environment
+        id: env
+        run: |
+          if [[ "${GITHUB_REF_NAME}" == "develop" ]]; then
+            echo "overlay=dev" >> $GITHUB_OUTPUT
+          elif [[ "${GITHUB_REF_NAME}" == "staging" ]]; then
+            echo "overlay=staging" >> $GITHUB_OUTPUT
+          elif [[ "${GITHUB_REF_NAME}" == "main" ]]; then
+            echo "overlay=prod" >> $GITHUB_OUTPUT
+          fi
+
       - name: Update GitOps Repo
         env:
           GH_TOKEN: ${{ secrets.JA_MICS_AP_TOKEN }}
@@ -91,7 +104,7 @@ jobs:
 
           git checkout -b $BRANCH
 
-          cd apps/${{ matrix.service }}/overlays/dev
+          cd apps/${{ matrix.service }}/overlays/${{ steps.env.outputs.overlay }}
 
           sed -i \
             "s/newTag:.*/newTag: ${{ github.sha }}/" \

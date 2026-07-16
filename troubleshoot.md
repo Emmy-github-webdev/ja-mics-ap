@@ -192,3 +192,22 @@ aws eks get-token \
 
   # If this command fails, it usually tells you exactly why authentication isn't working.
 ```
+
+- Restart the services
+
+```
+kubectl rollout restart deployment order-service -n <namespace>
+kubectl rollout restart deployment payment-service -n <namespace>
+kubectl rollout restart deployment product-service -n <namespace>
+kubectl rollout restart deployment user-service -n <namespace>
+
+# Or restart all once
+
+kubectl rollout restart deployment -n <namespace>
+```
+
+- Check the logs
+
+```
+kubectl logs pod_name -n namespace --previous
+```
