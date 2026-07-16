@@ -20,6 +20,13 @@ jobs:
           - payment-service
           - product-service
 
+    permissions:
+      contents: write
+      pull-requests: write
+      security-events: write
+      id-token: write 
+      issues: write
+
     steps:
       - uses: actions/checkout@v4
 
@@ -29,32 +36,29 @@ jobs:
           java-version: 21
 
       - name: Compile
+        working-directory: ${{ matrix.service }}
         run: |
-          mvn clean compile \
-            -pl ${{ matrix.service }} \
-            -am
+          mvn clean compile
 
       - name: Unit Tests
+        working-directory: ${{ matrix.service }}
         run: |
-          mvn test \
-            -pl ${{ matrix.service }} \
-            -am
+          mvn test 
 
       - name: Integration Tests
+        working-directory: ${{ matrix.service }}
         run: |
-          mvn verify \
-            -pl ${{ matrix.service }} \
-            -am
+          mvn verify 
 
       - name: Build Jar
+        working-directory: ${{ matrix.service }}
         run: |
-          mvn package \
-            -pl ${{ matrix.service }} \
-            -am
+          mvn package
 
       - name: Docker Build Validation
         run: |
           docker build \
+            --build-arg SERVICE_NAME=${{ matrix.service }} \
             -f ${{ matrix.service }}/Dockerfile \
             -t test-image \
             .
@@ -66,6 +70,10 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: java
+
+      - name: Build project (REQUIRED)
+        run: mvn clean compile
+        working-directory: ${{ matrix.service }}
 
       - name: CodeQL Analyze
         uses: github/codeql-action/analyze@v3
