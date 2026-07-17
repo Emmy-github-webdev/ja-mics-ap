@@ -211,3 +211,12 @@ kubectl rollout restart deployment -n <namespace>
 ```
 kubectl logs pod_name -n namespace --previous
 ```
+
+- Force Argocd to retry
+
+```
+kubectl annotate application ingress-dev \
+  -n argocd \
+  argocd.argoproj.io/refresh=hard \
+  --overwrite
+```
