@@ -220,3 +220,8 @@ kubectl annotate application ingress-dev \
   argocd.argoproj.io/refresh=hard \
   --overwrite
 ```
+
+```
+# Inspect the application
+kubectl describe application monitoring-dev -n argocd
+```
