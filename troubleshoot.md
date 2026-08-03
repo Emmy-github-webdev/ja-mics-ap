@@ -225,3 +225,43 @@ kubectl annotate application ingress-dev \
 # Inspect the application
 kubectl describe application monitoring-dev -n argocd
 ```
+- Scale Kyverno deployments down
+kubectl scale deployment -n kyverno --all --replicas=0
+
+- Verify: kubectl get pods -n kyverno
+
+- Check helm release state
+kubectl get secret -n kyverno | grep sh.helm.release
+
+- delete the helm release record
+kubectl delete secret -n kyverno sh.helm.release.v1.kyverno.v1
+
+- First disable Kyverno webhooks
+
+kubectl get validatingwebhookconfiguration | grep kyverno
+kubectl get mutatingwebhookconfiguration | grep kyverno
+
+- delete namespace - kubectl delete namespace kyverno
+- confirm - kubectl get all -n kyverno
+
+- Delete the config file
+
+kubectl delete mutatingwebhookconfiguration \
+  kyverno-policy-mutating-webhook-cfg \
+  kyverno-resource-mutating-webhook-cfg \
+  kyverno-verify-mutating-webhook-cfg
+
+- check the validating webhooks:
+kubectl get validatingwebhookconfiguration | grep kyverno
+
+- Delete them
+
+kubectl delete validatingwebhookconfiguration \
+  kyverno-cel-exception-validating-webhook-cfg \
+  kyverno-cleanup-validating-webhook-cfg \
+  kyverno-exception-validating-webhook-cfg \
+  kyverno-global-context-validating-webhook-cfg \
+  kyverno-policy-validating-webhook-cfg \
+  kyverno-resource-validating-webhook-cfg \
+  kyverno-ttl-validating-webhook-cfg
+
