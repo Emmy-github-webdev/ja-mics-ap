@@ -264,4 +264,3 @@ kubectl delete validatingwebhookconfiguration \
   kyverno-policy-validating-webhook-cfg \
   kyverno-resource-validating-webhook-cfg \
   kyverno-ttl-validating-webhook-cfg
-
