@@ -264,3 +264,42 @@ kubectl delete validatingwebhookconfiguration \
   kyverno-policy-validating-webhook-cfg \
   kyverno-resource-validating-webhook-cfg \
   kyverno-ttl-validating-webhook-cfg
+
+- Verify that prometheus and grafana pods are running
+```
+kubectl get pods -n monitoring
+```
+
+- Check prometheus and grafana service
+
+```
+kubectl get svc -n monitoring
+```
+
+- Run grafana
+```
+kubectl port-forward -n monitoring svc/kube-prometheus-stack-grafana 3000:80
+```
+
+- Then open
+```
+http://localhost:3000
+```
+
+- Retrive password
+
+```
+kubectl get secret -n monitoring \
+  kube-prometheus-stack-grafana \
+  -o jsonpath="{.data.admin-password}" | base64 --decode && echo
+```
+
+- Prometheus in another terminal
+```
+kubectl port-forward -n monitoring svc/kube-prometheus-stack-prometheus 9090:9090
+```
+
+- Open
+```
+http://localhost:9090
+```
