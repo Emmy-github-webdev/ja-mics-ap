@@ -1,0 +1,80 @@
+{
+  "info": {
+    "name": "User Service API",
+    "_postman_id": "9a2f6b42-5d0d-4d46-8ef5-123456789abc",
+    "description": "Collection for testing the User Service endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://api.dev.emmanuelogah.com"
+    },
+    {
+      "key": "email",
+      "value": "john@example.com"
+    }
+  ],
+  "item": [
+    {
+      "name": "Register User",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"Password123\",\n  \"fullName\": \"John Doe\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/users/register",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "users",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get User By Email",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/users/{{email}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "users",
+            "{{email}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List All Users",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/users",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "users"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

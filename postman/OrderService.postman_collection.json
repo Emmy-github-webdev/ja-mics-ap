@@ -1,0 +1,78 @@
+{
+  "info": {
+    "name": "Order Service API",
+    "description": "Collection for testing Order Service endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://api.dev.emmanuelogah.com"
+    },
+    {
+      "key": "orderId",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "Create Order",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"customerEmail\": \"john@example.com\",\n  \"items\": [\n    {\n      \"productId\": 1,\n      \"productName\": \"Laptop\",\n      \"quantity\": 2,\n      \"unitPrice\": 1499.99\n    },\n    {\n      \"productId\": 2,\n      \"productName\": \"Wireless Mouse\",\n      \"quantity\": 1,\n      \"unitPrice\": 25.50\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/orders",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "orders"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Order By ID",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/orders/{{orderId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "orders",
+            "{{orderId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List Orders",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/orders",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "orders"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
