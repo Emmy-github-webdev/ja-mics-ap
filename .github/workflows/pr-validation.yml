@@ -9,6 +9,33 @@ on:
 
 jobs:
 
+  # owasp-db:
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     - uses: actions/checkout@v4
+
+  #     - uses: actions/setup-java@v4
+  #       with:
+  #         distribution: temurin
+  #         java-version: 21
+
+  #     - name: OWASP DB cache
+  #       uses: actions/cache@v4
+  #       with:
+  #         path: ~/.dependency-check-data
+  #         key: owasp-${{ runner.os }}-dc12
+  #         restore-keys: |
+  #           owasp-${{ runner.os }}-
+
+  #     - name: Update OWASP DB
+  #       run: |
+  #         mvn org.owasp:dependency-check-maven:12.2.2:update-only \
+  #           -DnvdApiKey=${{ secrets.NVD_API_KEY }} \
+  #           -DnvdApiDelay=5000 \
+  #           -Dthreads=1 \
+  #           -DdataDirectory=$HOME/.dependency-check-data
+
 
   quality-gate:
 
@@ -64,5 +91,6 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.JA_MICS_AP_TOKEN }}
+          #GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }} # Only for orginizations with a Gitleaks Enterprise license
         with:
           args: detect --source . --redact --exit-code=2
