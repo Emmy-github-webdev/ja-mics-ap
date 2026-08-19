@@ -226,15 +226,25 @@ kubectl annotate application ingress-dev \
 kubectl describe application monitoring-dev -n argocd
 ```
 - Scale Kyverno deployments down
+```
 kubectl scale deployment -n kyverno --all --replicas=0
+```
 
-- Verify: kubectl get pods -n kyverno
+- Verify: 
+```
+kubectl get pods -n kyverno
+
+```
 
 - Check helm release state
+```
 kubectl get secret -n kyverno | grep sh.helm.release
+```
 
 - delete the helm release record
+```
 kubectl delete secret -n kyverno sh.helm.release.v1.kyverno.v1
+```
 
 - First disable Kyverno webhooks
 
