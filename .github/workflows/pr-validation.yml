@@ -82,20 +82,6 @@ jobs:
             -Dsonar.coverage.jacoco.xmlReportPaths=**/target/site/jacoco/jacoco.xml \
             -Dsonar.cpd.exclusions=src/main/java/**/dto/**,src/main/java/**/model/**
 
-      # - name: Restore OWASP DB
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: ~/.dependency-check-data
-      #     key: owasp-${{ runner.os }}-dc12
-
-      # - name: Dependency Check
-      #   working-directory: ${{ matrix.service }}
-      #   run: |
-      #     mvn org.owasp:dependency-check-maven:check \
-      #       -Ddependency-check.dataDirectory=$HOME/.dependency-check-data \
-      #       -Ddependency-check.threads=4 \
-      #       -DautoUpdate=false
-
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -105,5 +91,6 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.JA_MICS_AP_TOKEN }}
+          #GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }} # Only for orginizations with a Gitleaks Enterprise license
         with:
           args: detect --source . --redact --exit-code=2
