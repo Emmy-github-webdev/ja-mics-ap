@@ -62,7 +62,7 @@ jobs:
           cd Kubernetes-argocd
 
           git config user.name "Emmy-github-webdev"
-          git config user.email "ogahemmanuel75@gmail.com"
+          git config user.email "${{ secrets.USER_EMAIL }}"
 
           git add .
 
@@ -82,11 +82,15 @@ jobs:
         run: |
           cd Kubernetes-argocd
 
+          BRANCH=update-${{ matrix.service }}-${{ github.sha }}
+
+          git fetch origin
+
           gh pr create \
-            --base staging \
-            --head $BRANCH \
+            --base develop \
+            --head "$BRANCH" \
             --title "Promote ${{ matrix.service }} to staging" \
-            --body "Promoting image tag ${{ steps.image.outputs.tag }} from dev to staging"
+            --body "Promoting image tag ${{ github.sha }} from dev to staging"
 
   staging-validation:
 
@@ -136,4 +140,4 @@ jobs:
           docker run --rm \
             ghcr.io/zaproxy/zaproxy:stable \
             zap-baseline.py \
-            -t https://staging.company.com
+            -t https://api.staging.emmanuelogah.com

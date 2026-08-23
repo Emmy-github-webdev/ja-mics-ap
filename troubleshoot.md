@@ -1,0 +1,315 @@
+- make sure you're connected to the correct EKS cluster
+```
+kubectl config current-context
+```
+
+- verify the cluster is reachable
+```
+kubectl get nodes
+
+# If this returns:
+
+NAME                        STATUS   ROLES    AGE
+ip-10-0-1-45.ec2.internal   Ready    <none>   3h
+
+# your cluster is running.
+
+# If it returns:
+
+No resources found
+or
+
+Unable to connect to the server
+```
+then you're either connected to the wrong cluster or your kubeconfig hasn't been updated.
+
+You can update it with:
+
+```
+aws eks update-kubeconfig \
+  --region <region> \
+  --name <cluster-name>
+```
+
+- Check whether Argo CD applications exist
+
+```
+kubectl get applications -A
+
+# You should see something like:
+NAMESPACE   NAME             SYNC STATUS   HEALTH STATUS
+argocd      user-service     Synced        Healthy
+argocd      order-service    Synced        Healthy
+argocd      monitoring       Synced        Healthy
+```
+
+If you don't see any Application resources, your root-app or ApplicationSet may not have been applied.
+
+- Check the Argo CD namespace
+
+```
+kubectl get pods -n argocd
+
+# You should see components like:
+
+argocd-server
+argocd-repo-server
+argocd-application-controller
+argocd-applicationset-controller
+
+# If the namespace doesn't exist, Argo CD itself may not have been installed.
+```
+
+- Check all namespaces
+
+```
+kubectl get ns
+
+# You should see namespaces such as:
+argocd
+user
+order
+payment
+product
+monitoring
+```
+
+- Check for deployments
+
+```
+kubectl get deployments -A
+
+# You should see something like:
+NAMESPACE   NAME             READY
+order       order-service    1/1
+user        user-service     1/1
+
+# If there are deployments but no pods:
+
+kubectl describe deployment order-service -n order
+```
+
+- Check for pods
+
+```
+kubectl get pods -A
+
+If pods are stuck in:
+
+  Pending
+  ImagePullBackOff
+  CrashLoopBackOff
+
+run:
+
+  kubectl describe pod <pod-name> -n <namespace>
+
+and
+
+kubectl logs <pod-name> -n <namespace>
+```
+
+- If there are no deployments at all
+
+This usually means Argo CD never synchronized the manifests.
+
+Check:
+
+```
+kubectl get applications -A
+
+# or, if you have the Argo CD CLI:
+
+argocd app list
+
+# A status like OutOfSync means the manifests haven't been applied yet.
+
+```
+
+- Check Argo CD controller logs
+
+```
+kubectl logs -n argocd deployment/argocd-application-controller
+
+# This often reveals issues such as:
+
+  Invalid Kustomize configuration
+  Missing namespace
+  Authentication errors to the Git repository
+  Manifest generation errors
+
+```
+
+- Verify the cluster exists
+
+```
+aws eks list-clusters --region us-east-1
+```
+
+- Check your AWS identity
+
+```
+aws sts get-caller-identity
+```
+
+- Update your kubeconfig
+
+```
+aws eks update-kubeconfig \
+    --region us-east-1 \
+    --name <cluster-name>
+
+# Then
+
+kubectl get nodes
+```
+
+- Check your kubeconfig context
+
+```
+kubectl config current-context
+
+and
+
+kubectl config view --minify
+
+```
+
+- Refresh the kubeconfig
+
+```
+aws eks update-kubeconfig \
+  --region us-east-1 \
+  --name <cluster-name>
+```
+
+- Test the AWS authentication plugin
+
+```
+aws eks get-token \
+  --region us-east-1 \
+  --cluster-name <cluster-name>
+
+  # If this command fails, it usually tells you exactly why authentication isn't working.
+```
+
+- Restart the services
+
+```
+kubectl rollout restart deployment order-service -n <namespace>
+kubectl rollout restart deployment payment-service -n <namespace>
+kubectl rollout restart deployment product-service -n <namespace>
+kubectl rollout restart deployment user-service -n <namespace>
+
+# Or restart all once
+
+kubectl rollout restart deployment -n <namespace>
+```
+
+- Check the logs
+
+```
+kubectl logs pod_name -n namespace --previous
+```
+
+- Force Argocd to retry
+
+```
+kubectl annotate application ingress-dev \
+  -n argocd \
+  argocd.argoproj.io/refresh=hard \
+  --overwrite
+```
+
+```
+# Inspect the application
+kubectl describe application monitoring-dev -n argocd
+```
+- Scale Kyverno deployments down
+```
+kubectl scale deployment -n kyverno --all --replicas=0
+```
+
+- Verify: 
+```
+kubectl get pods -n kyverno
+
+```
+
+- Check helm release state
+```
+kubectl get secret -n kyverno | grep sh.helm.release
+```
+
+- delete the helm release record
+```
+kubectl delete secret -n kyverno sh.helm.release.v1.kyverno.v1
+```
+
+- First disable Kyverno webhooks
+
+kubectl get validatingwebhookconfiguration | grep kyverno
+kubectl get mutatingwebhookconfiguration | grep kyverno
+
+- delete namespace - kubectl delete namespace kyverno
+- confirm - kubectl get all -n kyverno
+
+- Delete the config file
+
+kubectl delete mutatingwebhookconfiguration \
+  kyverno-policy-mutating-webhook-cfg \
+  kyverno-resource-mutating-webhook-cfg \
+  kyverno-verify-mutating-webhook-cfg
+
+- check the validating webhooks:
+kubectl get validatingwebhookconfiguration | grep kyverno
+
+- Delete them
+
+kubectl delete validatingwebhookconfiguration \
+  kyverno-cel-exception-validating-webhook-cfg \
+  kyverno-cleanup-validating-webhook-cfg \
+  kyverno-exception-validating-webhook-cfg \
+  kyverno-global-context-validating-webhook-cfg \
+  kyverno-policy-validating-webhook-cfg \
+  kyverno-resource-validating-webhook-cfg \
+  kyverno-ttl-validating-webhook-cfg
+
+- Verify that prometheus and grafana pods are running
+```
+kubectl get pods -n monitoring
+```
+
+- Check prometheus and grafana service
+
+```
+kubectl get svc -n monitoring
+```
+
+- Run grafana
+```
+kubectl port-forward -n monitoring svc/kube-prometheus-stack-grafana 3000:80
+```
+
+- Then open
+```
+http://localhost:3000
+```
+
+- Retrive password
+
+```
+kubectl get secret -n monitoring \
+  kube-prometheus-stack-grafana \
+  -o jsonpath="{.data.admin-password}" | base64 --decode && echo
+```
+
+- Prometheus in another terminal
+```
+kubectl port-forward -n monitoring svc/kube-prometheus-stack-prometheus 9090:9090
+```
+
+- Open
+```
+http://localhost:9090
+```
