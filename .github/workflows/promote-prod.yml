@@ -25,7 +25,6 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-      security-events: write
 
     steps:
 
@@ -36,34 +35,46 @@ jobs:
           token: ${{ secrets.JA_MICS_AP_TOKEN }}
           path: Kubernetes-argocd
 
-      - name: Read Staging Image Tag
+      - name: Read Current Staging Image Tag
         id: image
         run: |
+          FILE="Kubernetes-argocd/apps/${{ matrix.service }}/overlays/staging/kustomization.yaml"
 
-          TAG=$(grep newTag \
-            gitops/apps/${{ matrix.service }}/overlays/staging/kustomization.yaml \
-            | awk '{print $2}')
+          TAG=$(awk '/newTag:/ {print $2; exit}' "$FILE")
 
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          if [ -z "$TAG" ]; then
+            echo "ERROR: Could not find newTag in $FILE"
+            exit 1
+          fi
+
+          echo "Staging image tag: $TAG"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
       - name: Create Promotion Branch
         run: |
+          BRANCH="promote-prod-${{ matrix.service }}-${{ github.sha }}"
+
+          echo "BRANCH=$BRANCH" >> "$GITHUB_ENV"
 
           cd Kubernetes-argocd
 
-          git checkout -b \
-            prod-${{ matrix.service }}-${{ github.sha }}
+          git checkout -b "$BRANCH"
 
       - name: Update Production Overlay
         run: |
+          FILE="Kubernetes-argocd/apps/${{ matrix.service }}/overlays/prod/kustomization.yaml"
+
+          echo "Updating $FILE"
 
           sed -i \
             "s/newTag:.*/newTag: ${{ steps.image.outputs.tag }}/" \
-            gitops/apps/${{ matrix.service }}/overlays/prod/kustomization.yaml
+            "$FILE"
+
+          echo "Updated production kustomization:"
+          cat "$FILE"
 
       - name: Commit Changes
         run: |
-
           cd Kubernetes-argocd
 
           git config user.name "Emmy-github-webdev"
@@ -71,23 +82,30 @@ jobs:
 
           git add .
 
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
           git commit \
             -m "Promote ${{ matrix.service }} to production"
 
       - name: Push Branch
         run: |
-
           cd Kubernetes-argocd
 
-          git push origin HEAD
+          git push origin "$BRANCH"
 
-      - name: Create Kubernetes-argocd PR
+      - name: Create Pull Request
         env:
           GH_TOKEN: ${{ secrets.JA_MICS_AP_TOKEN }}
         run: |
-
           cd Kubernetes-argocd
 
+          git fetch origin
+
           gh pr create \
-            --title "Production Release - ${{ matrix.service }}" \
-            --body "Promoting validated image from staging to production"
+            --base develop \
+            --head "$BRANCH" \
+            --title "Promote ${{ matrix.service }} to production" \
+            --body "Promoting validated image tag ${{ steps.image.outputs.tag }} from staging to production."
