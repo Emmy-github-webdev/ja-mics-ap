@@ -49,28 +49,23 @@ jobs:
 
       - name: Create Promotion Branch
         run: |
-          BRANCH="promote-staging-${{ matrix.service }}-${{ github.sha }}"
+          BRANCH="promote-staging-${{ matrix.service }}-${{ steps.image.outputs.tag }}"
 
           echo "BRANCH=$BRANCH" >> "$GITHUB_ENV"
 
           cd Kubernetes-argocd
-
           git checkout -b "$BRANCH"
 
       - name: Update Staging Overlay
         run: |
           FILE="Kubernetes-argocd/apps/${{ matrix.service }}/overlays/staging/kustomization.yaml"
 
-          echo "Updating $FILE"
-
           sed -i \
             "s/newTag:.*/newTag: ${{ steps.image.outputs.tag }}/" \
             "$FILE"
 
-          echo "Updated staging kustomization:"
-          cat "$FILE"
-
       - name: Commit Changes
+        id: commit
         run: |
           cd Kubernetes-argocd
 
@@ -80,30 +75,31 @@ jobs:
           git add .
 
           if git diff --cached --quiet; then
-            echo "No changes to commit."
+            echo "No promotion required."
+            echo "Dev and staging already use ${{ steps.image.outputs.tag }}"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           git commit \
             -m "Promote ${{ matrix.service }} to staging"
 
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
       - name: Push Branch
+        if: steps.commit.outputs.changed == 'true'
         run: |
           cd Kubernetes-argocd
-
           git push origin "$BRANCH"
 
       - name: Create Pull Request
+        if: steps.commit.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ secrets.JA_MICS_AP_TOKEN }}
         run: |
           cd Kubernetes-argocd
 
-          git fetch origin
-
           gh pr create \
-            --base develop \
-            --head "$BRANCH" \
             --title "Promote ${{ matrix.service }} to staging" \
             --body "Promoting image tag ${{ steps.image.outputs.tag }} from dev to staging."
 
