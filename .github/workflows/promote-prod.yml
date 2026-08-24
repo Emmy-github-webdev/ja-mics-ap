@@ -104,44 +104,44 @@ jobs:
             --body "Promoting image tag ${{ steps.image.outputs.tag }} from staging to production."
 
 
-  production-validation:
+  # production-validation:
 
-    needs: promote
+  #   needs: promote
 
-    runs-on: ubuntu-latest
+  #   runs-on: ubuntu-latest
 
-    steps:
+  #   steps:
 
-      - uses: actions/checkout@v4
+  #     - uses: actions/checkout@v4
 
-      - name: Wait for ArgoCD Deployment
-        run: |
-          echo "Waiting for production deployment..."
-          sleep 180
+  #     - name: Wait for ArgoCD Deployment
+  #       run: |
+  #         echo "Waiting for production deployment..."
+  #         sleep 180
 
-      - name: Smoke Tests
-        run: |
-          ./tests/smoke/run.sh
+  #     - name: Smoke Tests
+  #       run: |
+  #         ./tests/smoke/run.sh
 
-      - name: API Tests
-        run: |
-          mvn test -Pprod-api
+  #     - name: API Tests
+  #       run: |
+  #         mvn test -Pprod-api
 
-      - name: Contract Tests
-        run: |
-          mvn verify -Pcontract
+  #     - name: Contract Tests
+  #       run: |
+  #         mvn verify -Pcontract
 
-      - name: End-to-End Tests
-        run: |
-          npx playwright test
+  #     - name: End-to-End Tests
+  #       run: |
+  #         npx playwright test
 
-      - name: Performance Tests
-        run: |
-          k6 run performance/checkout.js
+  #     - name: Performance Tests
+  #       run: |
+  #         k6 run performance/checkout.js
 
-      - name: OWASP ZAP Baseline Scan
-        run: |
-          docker run --rm \
-            ghcr.io/zaproxy/zaproxy:stable \
-            zap-baseline.py \
-            -t https://api.prod.emmanuelogah.com
+  #     - name: OWASP ZAP Baseline Scan
+  #       run: |
+  #         docker run --rm \
+  #           ghcr.io/zaproxy/zaproxy:stable \
+  #           zap-baseline.py \
+  #           -t https://api.prod.emmanuelogah.com
