@@ -211,3 +211,105 @@ kubectl rollout restart deployment -n <namespace>
 ```
 kubectl logs pod_name -n namespace --previous
 ```
+
+- Force Argocd to retry
+
+```
+kubectl annotate application ingress-dev \
+  -n argocd \
+  argocd.argoproj.io/refresh=hard \
+  --overwrite
+```
+
+```
+# Inspect the application
+kubectl describe application monitoring-dev -n argocd
+```
+- Scale Kyverno deployments down
+```
+kubectl scale deployment -n kyverno --all --replicas=0
+```
+
+- Verify: 
+```
+kubectl get pods -n kyverno
+
+```
+
+- Check helm release state
+```
+kubectl get secret -n kyverno | grep sh.helm.release
+```
+
+- delete the helm release record
+```
+kubectl delete secret -n kyverno sh.helm.release.v1.kyverno.v1
+```
+
+- First disable Kyverno webhooks
+
+kubectl get validatingwebhookconfiguration | grep kyverno
+kubectl get mutatingwebhookconfiguration | grep kyverno
+
+- delete namespace - kubectl delete namespace kyverno
+- confirm - kubectl get all -n kyverno
+
+- Delete the config file
+
+kubectl delete mutatingwebhookconfiguration \
+  kyverno-policy-mutating-webhook-cfg \
+  kyverno-resource-mutating-webhook-cfg \
+  kyverno-verify-mutating-webhook-cfg
+
+- check the validating webhooks:
+kubectl get validatingwebhookconfiguration | grep kyverno
+
+- Delete them
+
+kubectl delete validatingwebhookconfiguration \
+  kyverno-cel-exception-validating-webhook-cfg \
+  kyverno-cleanup-validating-webhook-cfg \
+  kyverno-exception-validating-webhook-cfg \
+  kyverno-global-context-validating-webhook-cfg \
+  kyverno-policy-validating-webhook-cfg \
+  kyverno-resource-validating-webhook-cfg \
+  kyverno-ttl-validating-webhook-cfg
+
+- Verify that prometheus and grafana pods are running
+```
+kubectl get pods -n monitoring
+```
+
+- Check prometheus and grafana service
+
+```
+kubectl get svc -n monitoring
+```
+
+- Run grafana
+```
+kubectl port-forward -n monitoring svc/kube-prometheus-stack-grafana 3000:80
+```
+
+- Then open
+```
+http://localhost:3000
+```
+
+- Retrive password
+
+```
+kubectl get secret -n monitoring \
+  kube-prometheus-stack-grafana \
+  -o jsonpath="{.data.admin-password}" | base64 --decode && echo
+```
+
+- Prometheus in another terminal
+```
+kubectl port-forward -n monitoring svc/kube-prometheus-stack-prometheus 9090:9090
+```
+
+- Open
+```
+http://localhost:9090
+```

@@ -1,0 +1,78 @@
+{
+  "info": {
+    "name": "Product Service API",
+    "description": "Collection for testing Product Service endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://api.dev.emmanuelogah.com"
+    },
+    {
+      "key": "productId",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "Create Product",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Laptop\",\n  \"description\": \"Dell XPS 15 Laptop\",\n  \"price\": 1499.99,\n  \"stock\": 10\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/products",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "products"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List Products",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/products",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "products"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Product By ID",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/products/{{productId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "products",
+            "{{productId}}"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
