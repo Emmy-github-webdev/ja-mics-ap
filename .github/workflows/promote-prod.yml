@@ -11,9 +11,6 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    environment:
-      name: production
-
     strategy:
       matrix:
         service:
@@ -47,33 +44,28 @@ jobs:
             exit 1
           fi
 
-          echo "Staging image tag: $TAG"
+          echo "Production image tag: $TAG"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
       - name: Create Promotion Branch
         run: |
-          BRANCH="promote-prod-${{ matrix.service }}-${{ github.sha }}"
+          BRANCH="promote-prod-${{ matrix.service }}-${{ steps.image.outputs.tag }}"
 
           echo "BRANCH=$BRANCH" >> "$GITHUB_ENV"
 
           cd Kubernetes-argocd
-
           git checkout -b "$BRANCH"
 
       - name: Update Production Overlay
         run: |
           FILE="Kubernetes-argocd/apps/${{ matrix.service }}/overlays/prod/kustomization.yaml"
 
-          echo "Updating $FILE"
-
           sed -i \
             "s/newTag:.*/newTag: ${{ steps.image.outputs.tag }}/" \
             "$FILE"
 
-          echo "Updated production kustomization:"
-          cat "$FILE"
-
       - name: Commit Changes
+        id: commit
         run: |
           cd Kubernetes-argocd
 
@@ -83,29 +75,73 @@ jobs:
           git add .
 
           if git diff --cached --quiet; then
-            echo "No changes to commit."
+            echo "No promotion required."
+            echo "staging and production already use ${{ steps.image.outputs.tag }}"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           git commit \
             -m "Promote ${{ matrix.service }} to production"
 
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
       - name: Push Branch
+        if: steps.commit.outputs.changed == 'true'
         run: |
           cd Kubernetes-argocd
-
           git push origin "$BRANCH"
 
       - name: Create Pull Request
+        if: steps.commit.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ secrets.JA_MICS_AP_TOKEN }}
         run: |
           cd Kubernetes-argocd
 
-          git fetch origin
-
           gh pr create \
-            --base develop \
-            --head "$BRANCH" \
             --title "Promote ${{ matrix.service }} to production" \
-            --body "Promoting validated image tag ${{ steps.image.outputs.tag }} from staging to production."
+            --body "Promoting image tag ${{ steps.image.outputs.tag }} from staging to production."
+
+
+  production-validation:
+
+    needs: promote
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - name: Wait for ArgoCD Deployment
+        run: |
+          echo "Waiting for production deployment..."
+          sleep 180
+
+      - name: Smoke Tests
+        run: |
+          ./tests/smoke/run.sh
+
+      - name: API Tests
+        run: |
+          mvn test -Pprod-api
+
+      - name: Contract Tests
+        run: |
+          mvn verify -Pcontract
+
+      - name: End-to-End Tests
+        run: |
+          npx playwright test
+
+      - name: Performance Tests
+        run: |
+          k6 run performance/checkout.js
+
+      - name: OWASP ZAP Baseline Scan
+        run: |
+          docker run --rm \
+            ghcr.io/zaproxy/zaproxy:stable \
+            zap-baseline.py \
+            -t https://api.prod.emmanuelogah.com
