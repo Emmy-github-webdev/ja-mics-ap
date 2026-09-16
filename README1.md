@@ -125,7 +125,7 @@ Run Validation Tests
 
 promote-prod.yml
 
-
+```
 ja-mics-ap/
 ├── .github/
 │   └── workflows/
@@ -138,3 +138,4 @@ ja-mics-ap/
 ├── user-service/
 ├── payment-service/
 └── order-service/
+```
